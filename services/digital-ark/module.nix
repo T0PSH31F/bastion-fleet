@@ -1,0 +1,1 @@
+{ config, lib, pkgs, ... }: { options.services.digital-ark.enable = lib.mkEnableOption "Digital Ark service tier (Nextcloud, Jellyfin, Immich)"; config = lib.mkIf config.services.digital-ark.enable { services.nextcloud.enable = true; services.jellyfin.enable = true; services.immich.enable = true; }; }
