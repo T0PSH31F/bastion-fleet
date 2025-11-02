@@ -1,12 +1,31 @@
+# Bastion Meta-Module
+# This is the core module that defines ALL configuration options for Bastion managed servers.
+# Every option here maps 1:1 to a field in the website deployment form.
+# 
+# Architecture:
+# - Website form submits JSON → Configuration generator reads this module
+# - Generator creates customer config using these options
+# - Customer config imports service modules based on enabled services
+#
+# Usage in customer config:
+#   bastion = {
+#     enable = true;
+#     tier = "digital-ark";
+#     services.nextcloud.enable = true;
+#   };
+
 { config, lib, pkgs, ... }:
 
 with lib;
 
 {
+  # Define all Bastion configuration options
+  # These options are exposed to customer configurations
   options.bastion = {
     enable = mkEnableOption "Bastion managed server";
 
-    # Customer information
+    # Customer information (populated by configuration generator)
+    # This data comes from the website form submission
     customer = {
       id = mkOption {
         type = types.str;
@@ -30,14 +49,22 @@ with lib;
       };
     };
 
-    # Service tier
+    # Service tier selection
+    # Determines resource limits and available features
+    # - digital-ark: 3-5 services, basic features, low resource usage
+    # - barracks: All services, advanced features, moderate resources
+    # - forge: All services, no limits, full customization
     tier = mkOption {
       type = types.enum [ "digital-ark" "barracks" "forge" ];
       description = "Service tier level";
     };
 
-    # Service toggles (matches deployment form)
+    # Service toggles (matches deployment form exactly)
+    # Each service can be independently enabled/disabled
+    # Service-specific options are nested under each service
     services = {
+      # Nextcloud: Self-hosted file sync and share (like Dropbox/Google Drive)
+      # Includes: Files, Calendar, Contacts, Notes, Tasks
       nextcloud = {
         enable = mkEnableOption "Nextcloud file sync and share";
         domain = mkOption {
@@ -52,6 +79,8 @@ with lib;
         };
       };
 
+      # Jellyfin: Media server for movies, TV shows, music
+      # Supports hardware transcoding for efficient streaming
       jellyfin = {
         enable = mkEnableOption "Jellyfin media server";
         domain = mkOption {
@@ -66,6 +95,8 @@ with lib;
         };
       };
 
+      # Immich: Google Photos alternative
+      # Features: Photo backup, face recognition, search, sharing
       immich = {
         enable = mkEnableOption "Immich photo management";
         domain = mkOption {
@@ -80,6 +111,8 @@ with lib;
         };
       };
 
+      # Arr Stack: Automated media management
+      # Sonarr (TV), Radarr (Movies), Prowlarr (Indexers), etc.
       arrStack = {
         enable = mkEnableOption "Arr media management stack";
         
@@ -96,6 +129,8 @@ with lib;
         };
       };
 
+      # Ollama: Run large language models locally
+      # Supports Llama, Mistral, Phi, and many other models
       ollama = {
         enable = mkEnableOption "Ollama local AI";
         models = mkOption {
@@ -110,6 +145,8 @@ with lib;
         };
       };
 
+      # Open WebUI: ChatGPT-like interface for Ollama
+      # Provides a web UI for interacting with local AI models
       openWebUI = {
         enable = mkEnableOption "Open WebUI (ChatGPT-like interface)";
         domain = mkOption {
@@ -128,7 +165,9 @@ with lib;
       calibre = mkEnableOption "Calibre e-book server";
     };
 
-    # Home-manager profile
+    # Home-manager desktop environment profiles
+    # Allows customers to get a beautiful desktop environment
+    # This is a unique selling point - no other NixOS service offers this!
     homeManager = {
       enable = mkEnableOption "Desktop environment via home-manager";
       
@@ -151,7 +190,9 @@ with lib;
       };
     };
 
-    # Backup configuration
+    # Automated backup configuration
+    # Uses restic for encrypted, deduplicated backups
+    # Supports S3-compatible storage (AWS, Backblaze B2, Wasabi, etc.)
     backup = {
       enable = mkEnableOption "Automated backups";
       
@@ -199,7 +240,9 @@ with lib;
       };
     };
 
-    # Monitoring configuration
+    # Monitoring and alerting configuration
+    # Stack: Prometheus (metrics) + Grafana (dashboards) + Loki (logs)
+    # Provides real-time visibility into server health
     monitoring = {
       enable = mkEnableOption "Prometheus + Grafana monitoring";
       
@@ -229,8 +272,11 @@ with lib;
     };
   };
 
+  # Configuration implementation
+  # This section applies the actual NixOS configuration based on enabled options
   config = mkIf config.bastion.enable {
     # Base system configuration
+    # These are applied to ALL Bastion servers regardless of tier
     system.stateVersion = "24.05";
     
     # Enable flakes
@@ -255,7 +301,8 @@ with lib;
       dates = "weekly";
     };
 
-    # Enable tier-specific modules based on selection
+    # Dynamically import tier-specific modules
+    # Each tier module applies resource limits and feature toggles
     imports = [
       (mkIf (config.bastion.tier == "digital-ark") ../tiers/digital-ark.nix)
       (mkIf (config.bastion.tier == "barracks") ../tiers/barracks.nix)
