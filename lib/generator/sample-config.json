@@ -1,0 +1,56 @@
+{
+  "customer": {
+    "id": "customer-001",
+    "email": "john.doe@example.com",
+    "fullName": "John Doe",
+    "customDomain": "myserver.example.com"
+  },
+  "hardware": {
+    "deploymentType": "customer-provided",
+    "ipAddress": "192.168.1.100",
+    "sshPort": 22,
+    "architecture": "x86_64-linux"
+  },
+  "tier": "digital-ark",
+  "services": {
+    "nextcloud": {
+      "enabled": true,
+      "storageQuota": "100G"
+    },
+    "jellyfin": {
+      "enabled": true,
+      "enableHardwareAccel": true
+    },
+    "immich": {
+      "enabled": true,
+      "enableML": false
+    }
+  },
+  "homeManager": {
+    "enabled": true,
+    "profile": "end4-hyprland",
+    "username": "john",
+    "colorScheme": "dark"
+  },
+  "backup": {
+    "enabled": true,
+    "storageType": "customer-s3",
+    "s3Config": {
+      "endpoint": "s3.us-west-002.backblazeb2.com",
+      "bucket": "bastion-backups",
+      "accessKey": "test-access-key",
+      "secretKey": "test-secret-key"
+    },
+    "schedule": "daily",
+    "retention": {
+      "daily": 7,
+      "weekly": 4,
+      "monthly": 12
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "remoteAccess": "ssh-only",
+    "alertEmail": "john.doe@example.com"
+  }
+}
