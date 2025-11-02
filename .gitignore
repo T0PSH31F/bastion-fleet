@@ -1,0 +1,35 @@
+# Nix build results
+result
+result-*
+
+# Customer configurations (contains sensitive data)
+customers/*/
+!customers/.gitkeep
+!customers/README.md
+
+# Secrets
+secrets/keys/
+*.key
+*.age
+
+# Development
+.direnv/
+.envrc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Deno
+.deno/
+deno.lock
+
+# Temporary files
+*.tmp
+.DS_Store
