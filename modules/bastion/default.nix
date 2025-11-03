@@ -165,28 +165,23 @@ with lib;
       calibre = mkEnableOption "Calibre e-book server";
     };
 
-    # Home-manager desktop environment profiles
+    # Desktop rice selection (decoupled home-manager)
     # Allows customers to get a beautiful desktop environment
     # This is a unique selling point - no other NixOS service offers this!
-    homeManager = {
-      enable = mkEnableOption "Desktop environment via home-manager";
+    # Each rice is self-contained in modules/desktop/rices/<rice-name>/
+    desktop = {
+      enable = mkEnableOption "Bastion desktop environment";
       
-      profile = mkOption {
-        type = types.enum [ "minimal" "end4-hyprland" "caelestia" "dank-material" ];
-        default = "minimal";
-        description = "Desktop environment profile";
+      rice = mkOption {
+        type = types.enum [ "caelestia" "end-4" "noctalia" "dank-material" "omarchy-nix" "headless" ];
+        default = "headless";
+        description = "Desktop rice to use (caelestia, end-4, noctalia, dank-material, omarchy-nix, headless)";
       };
 
-      username = mkOption {
+      user = mkOption {
         type = types.str;
         default = "user";
-        description = "Username for desktop environment";
-      };
-
-      colorScheme = mkOption {
-        type = types.enum [ "dark" "light" "auto" ];
-        default = "dark";
-        description = "Color scheme preference";
+        description = "Username for home-manager desktop configuration";
       };
     };
 
@@ -307,6 +302,9 @@ with lib;
       (mkIf (config.bastion.tier == "digital-ark") ../tiers/digital-ark.nix)
       (mkIf (config.bastion.tier == "barracks") ../tiers/barracks.nix)
       (mkIf (config.bastion.tier == "forge") ../tiers/forge.nix)
+      
+      # Desktop rice module (decoupled home-manager)
+      ../desktop
     ];
   };
 }
