@@ -20,9 +20,60 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Desktop rice flake inputs
+    # Quickshell is required by multiple rices (Caelestia, Noctalia, DankMaterialShell)
+    quickshell = {
+      url = "github:outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Caelestia Shell - The flagship (5.6k stars, most popular)
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # end-4 dots (celesrenata port) - The modern classic
+    end-4-flakes = {
+      url = "github:celesrenata/end-4-flakes";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Noctalia Shell - The minimalist (lavender aesthetic)
+    noctalia-shell = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.quickshell.follows = "quickshell";  # Use same quickshell version
+    };
+
+    # DankMaterialShell - The complete shell (all-in-one)
+    dank-material-shell = {
+      url = "github:AvengeMedia/DankMaterialShell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Omarchy-nix - The developer's choice (web dev focused)
+    omarchy-nix = {
+      url = "github:henrysipp/omarchy-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, sops-nix, home-manager, ... }:
+  outputs = inputs@{ 
+    self, 
+    nixpkgs, 
+    flake-parts, 
+    sops-nix, 
+    home-manager,
+    quickshell,
+    caelestia-shell,
+    end-4-flakes,
+    noctalia-shell,
+    dank-material-shell,
+    omarchy-nix,
+    ... 
+  }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" "aarch64-linux" ];
       

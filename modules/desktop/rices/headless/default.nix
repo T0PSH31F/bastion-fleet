@@ -11,7 +11,7 @@
 # - Essential CLI utilities
 # - Optimized for SSH access
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, riceInputs, ... }:
 
 with lib;
 

@@ -9,7 +9,7 @@
 #     rice = "omarchy-nix";  # or "caelestia", "end-4", "noctalia", "dank-material", "headless"
 #   };
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs ? {}, ... }:
 
 with lib;
 
@@ -92,14 +92,25 @@ in {
   };
   
   config = mkIf cfg.enable {
-    # Import the selected rice module
+    # Import the selected rice module with inputs
     # Each rice module is responsible for:
     # 1. Installing all required packages (system-level)
     # 2. Configuring home-manager for the user
     # 3. Setting up the compositor (if applicable)
     # 4. Providing all dotfiles and configurations
     imports = [
-      (./rices + "/${cfg.rice}")
+      (import (./rices + "/${cfg.rice}") {
+        inherit config lib pkgs;
+        # Pass rice-specific flake inputs
+        riceInputs = {
+          caelestia-shell = inputs.caelestia-shell or null;
+          end-4-flakes = inputs.end-4-flakes or null;
+          noctalia-shell = inputs.noctalia-shell or null;
+          dank-material-shell = inputs.dank-material-shell or null;
+          omarchy-nix = inputs.omarchy-nix or null;
+          quickshell = inputs.quickshell or null;
+        };
+      })
     ];
     
     # Pass rice metadata to the rice module

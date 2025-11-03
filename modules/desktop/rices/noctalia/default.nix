@@ -1,55 +1,134 @@
 # Noctalia Shell Rice Module
 #
-# The minimalist - beautiful lavender aesthetic, multi-compositor support.
+# The minimalist - beautiful lavender aesthetic with multi-compositor support.
+# Sleek and minimal desktop shell thoughtfully crafted for Wayland.
 #
 # Features:
-# - Quickshell-based minimal shell
-# - Multi-compositor (Hyprland, Niri, Sway)
-# - Warm lavender aesthetic
-# - Lock screen, power profiles
-# - Cava music visualization
-# - "Quiet by design" philosophy
+# - Beautiful minimal design with lavender color scheme
+# - Multi-compositor support (Niri, Hyprland, Sway)
+# - Quickshell-based widgets
+# - Bar, control center, notifications, lock screen
+# - Customizable via Nix configuration
+# - Active development (970 stars, v2.21.1)
 #
-# Source: https://github.com/noctalia-dev/noctalia-shell
+# Dependencies:
+# - Quickshell (git version)
+# - Hyprland/Niri/Sway (compositor choice)
+# - Various system utilities
 #
-# TODO: Implement full Noctalia integration
-# This requires:
-# 1. Adding noctalia-shell flake input
-# 2. Importing home-manager module
-# 3. Configuring Quickshell
-# 4. Setting up compositor (Hyprland/Niri/Sway)
+# Configuration:
+# - Via home-manager module (programs.noctalia-shell)
+# - Settings deep merged with defaults
+# - Optional custom colors
+# - Systemd service for auto-start
+#
+# References:
+# - GitHub: https://github.com/noctalia-dev/noctalia-shell
+# - Docs: https://docs.noctalia.dev
+# - Flake: github:noctalia-dev/noctalia-shell
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, riceInputs, ... }:
 
 with lib;
 
 let
   cfg = config.bastion.desktop;
+  riceEnabled = cfg.enable && cfg.rice == "noctalia";
   
-in {
-  config = mkIf (cfg.enable && cfg.rice == "noctalia") {
-    
-    # Placeholder implementation
-    
+  # Get rice inputs from parameter
+  noctaliaInput = riceInputs.noctalia-shell;
+  quickshellInput = riceInputs.quickshell;
+in
+{
+  config = mkIf riceEnabled {
+    # System-level packages required by Noctalia
     environment.systemPackages = with pkgs; [
-      hyprland
+      # Core dependencies
+      networkmanager
+      pipewire
+      wireplumber
+      
+      # Fonts
+      nerdfonts
     ];
     
-    programs.hyprland.enable = true;
+    # Enable Hyprland (Noctalia's default compositor)
+    # Note: Noctalia also supports Niri and Sway
+    programs.hyprland = {
+      enable = true;
+      xwayland.enable = true;
+    };
     
-    home-manager.users.${cfg.user} = { pkgs, ... }: {
-      home.file.".config/bastion-notice.txt".text = ''
-        Noctalia Shell rice is not yet fully implemented.
+    # Home-manager configuration for the desktop user
+    home-manager.users.${cfg.user} = { config, pkgs, ... }: {
+      # Import Noctalia home-manager module from flake
+      imports = mkIf (noctaliaInput != null) [
+        noctaliaInput.homeModules.default
+      ];
+      
+      # Configure Noctalia shell
+      programs.noctalia-shell = mkIf (noctaliaInput != null) {
+        enable = true;
         
-        To complete the implementation, we need to:
-        1. Add noctalia-shell flake input to bastion-fleet
-        2. Import the home-manager module
-        3. Configure Quickshell and compositor
+        # Settings configuration (deep merged with defaults)
+        settings = {
+          # Bar configuration
+          bar = {
+            density = "comfortable";  # or "compact"
+            position = "top";         # or "bottom", "left", "right"
+            showCapsule = true;
+            
+            widgets = {
+              left = [
+                { id = "SidePanelToggle"; useDistroLogo = true; }
+                { id = "Workspace"; hideUnoccupied = false; labelMode = "icon"; }
+              ];
+              center = [
+                { id = "Clock"; formatHorizontal = "HH:mm"; useMonospacedFont = true; }
+              ];
+              right = [
+                { id = "WiFi"; }
+                { id = "Bluetooth"; }
+                { id = "Battery"; alwaysShowPercentage = false; warningThreshold = 20; }
+              ];
+            };
+          };
+          
+          # Color scheme
+          colorSchemes.predefinedScheme = "Lavender";  # Noctalia's signature color
+          
+          # General appearance
+          general = {
+            avatarImage = "~/.face";
+            radiusRatio = 0.2;
+          };
+          
+          # Location for weather widget
+          location = {
+            name = "Your City";
+            monthBeforeDay = true;
+          };
+        };
+      };
+      
+      # Additional home-manager configuration
+      home.packages = with pkgs; [
+        # Terminal
+        foot
         
-        For now, you have a basic Hyprland setup.
+        # File manager
+        thunar
         
-        Full implementation coming soon!
-      '';
+        # Audio control
+        pavucontrol
+        
+        # Media player
+        mpv
+        
+        # Screenshot tools
+        grim
+        slurp
+      ];
     };
   };
 }

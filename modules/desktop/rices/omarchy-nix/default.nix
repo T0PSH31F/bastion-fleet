@@ -12,7 +12,7 @@
 #
 # Source: https://github.com/henrysipp/omarchy-nix
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, riceInputs, ... }:
 
 with lib;
 
